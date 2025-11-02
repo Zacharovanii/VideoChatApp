@@ -1,13 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
-class UserBase(BaseModel):
+class CreateUserShema(BaseModel):
+    # model_config = ConfigDict(strict=True)
+
     username: str
-
-
-class UserCreate(UserBase):
-    pass
-
-
-class UserRead(UserBase):
-    id: int
+    password: str
+    email: EmailStr

@@ -1,20 +1,11 @@
-from typing import TYPE_CHECKING
-
-from fastapi_users.db import (
-    SQLAlchemyBaseUserTable,
-    SQLAlchemyUserDatabase,
-)
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from .base import Base
-from .mixins.id_int_pk import IdIntPkMixin
 
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Mapped, mapped_column
 
 
-class User(Base, IdIntPkMixin, SQLAlchemyBaseUserTable[int]):
-
-    @classmethod
-    def get_db(cls, session: AsyncSession):
-        return SQLAlchemyUserDatabase(session, User)
+class User(Base):
+    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+    hashed_password: Mapped[str] = mapped_column(nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    is_verified: Mapped[bool] = mapped_column(default=False)
