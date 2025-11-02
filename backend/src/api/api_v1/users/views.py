@@ -3,33 +3,30 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
-from core.config import settings
 from core.security import *
-
+from core.shemas.user import CreateUserSchema, ReadUserSchema, CredsUserSchema
 from .crud import get_user_crud, UserCRUD
+
 
 router = APIRouter(prefix=settings.api.v1.users)
 
 
-@router.post("/register")
+@router.post("/register", response_model=ReadUserSchema)
 async def create_user(
-    username: str,
-    email: str,
-    password: str,
+    new_user: CreateUserSchema,
     user_crud: Annotated[UserCRUD, Depends(get_user_crud)],
 ):
-    user = await user_crud.create_user(username, email, password)
-    return {"id": user.id, "email": user.email, "username": user.username}
+    user = await user_crud.create_user(user_in=new_user)
+    return user
 
 
 @router.post("/login")
 async def login(
-    email: str,
-    password: str,
+    creds: CredsUserSchema,
     user_crud: UserCRUD = Depends(get_user_crud),
 ):
-    user = await user_crud.get_user_by_email(email)
-    if not user or not validate_password(password, user.hashed_password):
+    user = await user_crud.get_user_by_email(creds.email)
+    if not user or not validate_password(creds.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     access_token = create_access_token({"sub": str(user.id), "email": user.email})
