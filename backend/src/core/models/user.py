@@ -1,6 +1,10 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from fastapi_users.db import (
+    SQLAlchemyBaseUserTable,
+    SQLAlchemyUserDatabase,
+)
 from .base import Base
+from .mixins.id_int_pk import IdIntPkMixin
 
 
-class User(Base):
-    username: Mapped[str] = mapped_column(unique=True)
+class User(Base, IdIntPkMixin, SQLAlchemyBaseUserTable[int]):
+    pass
