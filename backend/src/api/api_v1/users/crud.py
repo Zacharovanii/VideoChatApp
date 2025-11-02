@@ -27,6 +27,11 @@ class UserCRUD:
         result = await self.db.execute(select(UserORM).where(UserORM.email == email))
         return result.scalars().first()
 
+    async def get_user_by_id(self, user_id: int) -> Optional[UserORM]:
+        stmt = select(UserORM).filter(UserORM.id == user_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().one_or_none()
+
 
 async def get_user_crud() -> AsyncGenerator[UserCRUD, None]:
     async for session in db_helper.session_getter():
