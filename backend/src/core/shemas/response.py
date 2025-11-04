@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Any, Optional, Generic, TypeVar
+from typing import Optional, Generic, TypeVar
 from datetime import datetime, UTC
 
 

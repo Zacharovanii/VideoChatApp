@@ -19,10 +19,7 @@ def success_response(
         data=data,
         meta=MetaInfo(path=request.url.path if request else None),
     ).model_dump()
-    return JSONResponse(
-        status_code=status_code,
-        content=jsonable_encoder(payload),
-    )
+    return JSONResponse(status_code=status_code, content=jsonable_encoder(payload))
 
 
 def error_response(
