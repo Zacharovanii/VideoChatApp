@@ -1,6 +1,7 @@
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from core.shemas.response import ResponseSchema, MetaInfo
+from fastapi import HTTPException, status
+from core.schemas.response import ResponseSchema, MetaInfo
 from fastapi import Request
 from pydantic import BaseModel
 
@@ -36,4 +37,22 @@ def error_response(
         errors=errors,
         meta=MetaInfo(path=request.url.path if request else None),
     ).model_dump()
-    return JSONResponse(status_code=status_code, content=payload)
+    return JSONResponse(status_code=status_code, content=jsonable_encoder(payload))
+
+
+def error_raise(
+    detail: str,
+    status_code: int = status.HTTP_400_BAD_REQUEST,
+):
+    return HTTPException(status_code=status_code, detail=detail)
+
+
+class Errors:
+    INVALID_CREDENTIALS = error_raise(
+        "Invalid email or password", status.HTTP_401_UNAUTHORIZED
+    )
+    USER_NOT_FOUND = error_raise("User not found", status.HTTP_404_NOT_FOUND)
+    TOKEN_INVALID = error_raise(
+        "Invalid or expired token", status.HTTP_401_UNAUTHORIZED
+    )
+    ACCESS_DENIED = error_raise("Access denied", status.HTTP_403_FORBIDDEN)
