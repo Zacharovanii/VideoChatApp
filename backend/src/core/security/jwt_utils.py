@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, UTC
 
-import bcrypt
 import jwt
 
 from core.config import settings
@@ -53,22 +52,4 @@ def create_refresh_token(data: dict) -> str:
     data.update(type="refresh")
     return encode_jwt(
         data, expire_minutes=settings.auth_jwt.access_token_expire_minutes
-    )
-
-
-def hash_password(
-    password: str,
-) -> str:
-    salt = bcrypt.gensalt()
-    pwd_bytes: bytes = password.encode()
-    return bcrypt.hashpw(pwd_bytes, salt).decode()
-
-
-def validate_password(
-    password: str,
-    hashed_password: str,
-) -> bool:
-    return bcrypt.checkpw(
-        password=password.encode(),
-        hashed_password=hashed_password.encode(),
     )

@@ -2,22 +2,36 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi import status
 
-from core.security import *
-from core.shemas.user import CreateUserSchema, ReadUserSchema, CredsUserSchema
+from core.security.cookie_utils import set_auth_cookies
+from core.security.jwt_utils import *
+from core.security.pwd_utils import *
+from core.utils.response_factory import success_response
+from core.shemas.user import (
+    CreateUserSchema,
+    ReadUserSchema,
+    CredsUserSchema,
+    UserResponseShema,
+)
 from .crud import get_user_crud, UserCRUD
 
 
 router = APIRouter(prefix=settings.api.v1.users)
 
 
-@router.post("/register", response_model=ReadUserSchema)
+@router.post("/register", response_model=UserResponseShema)
 async def create_user(
     new_user: CreateUserSchema,
     user_crud: Annotated[UserCRUD, Depends(get_user_crud)],
 ):
     user = await user_crud.create_user(user_in=new_user)
-    return user
+    response = success_response(
+        message="User successfully created",
+        status_code=status.HTTP_201_CREATED,
+        data=ReadUserSchema.model_validate(user, from_attributes=True),
+    )
+    return response
 
 
 @router.post("/login")
@@ -33,22 +47,8 @@ async def login(
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
     response = JSONResponse(content={"message": "Login successful"})
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        samesite="lax",
-        secure=False,  # True на продакшене
-        max_age=60 * 15,
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        max_age=60 * 60 * 24 * 7,
-    )
+    set_auth_cookies(response, access_token, refresh_token)
+
     return response
 
 
