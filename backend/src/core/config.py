@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from pydantic import PostgresDsn
+from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from pathlib import Path
@@ -29,6 +28,13 @@ class CookieConfig(BaseModel):
     refresh_token_key: str = "refresh_token"
     access_token_expire_second: int = 15 * 60
     refresh_token_expire_second: int = 60 * 60 * 24 * 30
+
+
+class CORSConfig(BaseModel):
+    allow_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    allow_credentials: bool = True
+    allow_methods: list[str] = ["*"]
+    allow_headers: list[str] = ["*"]
 
 
 class ApiV1Prefix(BaseModel):
@@ -70,6 +76,7 @@ class Settings(BaseSettings):
     db: DatabaseConfig
     auth_jwt: AuthJWT = AuthJWT()
     cookie: CookieConfig = CookieConfig()
+    cors: CORSConfig = CORSConfig()
 
 
 settings = Settings()
