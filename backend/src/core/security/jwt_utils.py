@@ -3,10 +3,9 @@ from datetime import datetime, timedelta, UTC
 import jwt
 
 from core.config import settings
-from core.shemas.token import JwtPayloadShema
+from core.schemas.token import JwtPayloadShema
 
-from fastapi import Request
-from fastapi import HTTPException
+from fastapi import Request, HTTPException, status
 
 
 def encode_jwt(
@@ -63,12 +62,16 @@ def create_refresh_token(sub: str, email: str | None = None) -> str:
 def get_access_token(request: Request) -> dict:
     token = request.cookies.get(settings.cookie.access_token_key)
     if not token:
-        raise HTTPException(status_code=401, detail="Access token missing")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token missing"
+        )
 
     try:
         payload = decode_jwt(token)
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token"
+        )
 
     return payload
 

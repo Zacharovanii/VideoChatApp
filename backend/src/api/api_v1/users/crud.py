@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import User as UserORM, db_helper
-from core.shemas.user import CreateUserSchema
+from core.schemas.user import CreateUserSchema
 
 
 class UserCRUD:
