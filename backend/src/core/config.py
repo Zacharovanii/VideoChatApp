@@ -20,6 +20,17 @@ class AuthJWT(BaseModel):
     refresh_token_expire_minutes: int = 60 * 24 * 30
 
 
+class CookieConfig(BaseModel):
+    httponly: bool = True
+    samesite: str = "lax"
+    secure: bool = False
+
+    access_token_key: str = "access_token"
+    refresh_token_key: str = "refresh_token"
+    access_token_expire_second: int = 15 * 60
+    refresh_token_expire_second: int = 60 * 60 * 24 * 30
+
+
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
     users: str = "/users"
@@ -58,6 +69,7 @@ class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     db: DatabaseConfig
     auth_jwt: AuthJWT = AuthJWT()
+    cookie: CookieConfig = CookieConfig()
 
 
 settings = Settings()
