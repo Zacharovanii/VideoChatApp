@@ -2,18 +2,22 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from core.security.cookie_utils import set_auth_cookies
-from core.security.jwt_utils import *
-from core.security.pwd_utils import *
-from core.utils.response_factory import success_response
-from core.schemas.user import (
+from core.security import (
+    set_auth_cookies,
+    create_access_token,
+    create_refresh_token,
+    validate_password,
+)
+from core.schemas import (
     CreateUserSchema,
     ReadUserSchema,
     CredsUserSchema,
     UserResponseSchema,
+    ResponseSchema,
 )
-from core.schemas.response import ResponseSchema
-from core.dependencies.users import get_current_user as user_dependency
+from core.config import settings
+from core.utils import success_response
+from core.dependencies import get_current_user as user_dependency
 from .crud import get_user_crud, UserCRUD
 
 

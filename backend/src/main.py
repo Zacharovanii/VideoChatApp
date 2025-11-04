@@ -8,8 +8,7 @@ from fastapi.exceptions import RequestValidationError
 
 from core.config import settings
 from core.models import db_helper
-from core.middleware.error_handler import ErrorHandlerMiddleware
-from core.utils.response_factory import error_response
+from core.utils import error_response
 
 from api import router as api_router
 
