@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 from core.security.pwd_utils import hash_password
 from .response import ResponseSchema
-from typing import List
 
 
 class CredsUserSchema(BaseModel):
@@ -29,5 +28,5 @@ class ReadUserSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-UserResponseShema = ResponseSchema[ReadUserSchema]
-# UserListResponseShema = ReadUserSchema[List[ResponseSchema]]
+UserResponseSchema = ResponseSchema[ReadUserSchema]
+UserListResponseSchema = ResponseSchema[list[ReadUserSchema]]
