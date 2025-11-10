@@ -1,28 +1,26 @@
 import uvicorn
-
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.exceptions import RequestValidationError
-
-from core.config import settings
-from core.models import db_helper
-from core.utils import error_response
 
 from api import router as api_router
+from core.config import settings
+from exceptions import register_exception_handlers
+from lifespan import lifespan
+from schemas import ResponseSchema
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    yield
-    await db_helper.dispose()
+app = FastAPI(
+    lifespan=lifespan,
+    title="VideoChat API",
+    responses={
+        422: {"model": ResponseSchema, "description": "Validation Error"},
+        400: {"model": ResponseSchema, "description": "Bad Request"},
+        500: {"model": ResponseSchema, "description": "Internal Server Error"},
+    },
+)
 
-
-main_app = FastAPI(lifespan=lifespan, title="VideoChat API")
-
-main_app.include_router(api_router)
-main_app.add_middleware(
+app.include_router(api_router)
+app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors.allow_origins,
     allow_credentials=settings.cors.allow_credentials,
@@ -30,32 +28,8 @@ main_app.add_middleware(
     allow_headers=settings.cors.allow_headers,
 )
 
-
-@main_app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    validation_errors = {}
-    for err in exc.errors():
-        loc = ".".join(map(str, err["loc"]))
-        validation_errors[loc] = err["msg"]
-
-    return error_response(
-        message="Invalid input data",
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        errors=validation_errors,
-        request=request,
-    )
-
-
-@main_app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    return error_response(
-        message=exc.detail or "HTTP error",
-        status_code=exc.status_code,
-        request=request,
-    )
+register_exception_handlers(app)
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:main_app", host=settings.run.host, port=settings.run.port, reload=True
-    )
+    uvicorn.run("main:app", host=settings.run.host, port=settings.run.port, reload=True)

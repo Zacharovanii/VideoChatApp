@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, UTC
 
 import jwt
+from fastapi import Request, HTTPException, status
 
 from core.config import settings
-from core.schemas.token import JwtPayloadShema
-
-from fastapi import Request, HTTPException, status
+from schemas.token import JwtPayloadShema
 
 
 def encode_jwt(
@@ -17,10 +16,12 @@ def encode_jwt(
 ) -> str:
     to_encode = payload.copy()
     now = datetime.now(UTC)
+
     if expire_timedelta:
         expire = now + expire_timedelta
     else:
         expire = now + timedelta(minutes=expire_minutes)
+
     to_encode.update(
         exp=expire,
         iat=now,

@@ -1,5 +1,6 @@
-from core.config import settings
 from fastapi.responses import JSONResponse
+
+from core.config import settings
 
 
 def set_jwt_cookie(

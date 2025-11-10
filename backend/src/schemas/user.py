@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-from core.security.pwd_utils import hash_password
+
+from core.pwd import hash_password
 from .response import ResponseSchema
 
 

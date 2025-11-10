@@ -1,33 +1,40 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from core.response_factory import success_response
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from core.security import (
-    set_auth_cookies,
+from core.config import settings
+from dependencies import current_user_getter as user_dependency
+from core.jwt import (
     create_access_token,
     create_refresh_token,
-    validate_password,
 )
-from core.schemas import (
+from core.cookies import set_auth_cookies
+from core.pwd import validate_password
+from schemas import (
     CreateUserSchema,
     ReadUserSchema,
     CredsUserSchema,
     UserResponseSchema,
     ResponseSchema,
 )
-from core.config import settings
-from core.utils import success_response
-from core.dependencies import get_current_user as user_dependency
-from .crud import get_user_crud, UserCRUD
-
+from services.user import UserService
+from dependencies.user import user_service_getter
 
 router = APIRouter(prefix=settings.api.v1.users, tags=["Users"])
 
 
-@router.post("/register", response_model=UserResponseSchema)
+@router.post(
+    "/register",
+    response_model=UserResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        201: {"model": ResponseSchema, "description": "User successfully created"},
+    },
+)
 async def create_user(
     new_user: CreateUserSchema,
-    user_crud: Annotated[UserCRUD, Depends(get_user_crud)],
+    user_crud: Annotated[UserService, Depends(user_service_getter)],
 ):
     user = await user_crud.create_user(user_in=new_user)
     response = success_response(
@@ -41,7 +48,7 @@ async def create_user(
 @router.post("/login", response_model=ResponseSchema)
 async def login(
     creds: CredsUserSchema,
-    user_crud: UserCRUD = Depends(get_user_crud),
+    user_crud: UserService = Depends(user_service_getter),
 ):
     user = await user_crud.get_user_by_email(creds.email)
     if not user or not validate_password(creds.password, user.hashed_password):
