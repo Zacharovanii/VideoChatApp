@@ -4,11 +4,8 @@ from core.response_factory import success_response
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.config import settings
-from dependencies import current_user_getter as user_dependency
-from core.jwt import (
-    create_access_token,
-    create_refresh_token,
-)
+from dependencies import current_user_getter
+from core.jwt import create_token
 from core.cookies import set_auth_cookies
 from core.pwd import validate_password
 from schemas import (
@@ -54,8 +51,10 @@ async def login(
     if not user or not validate_password(creds.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    access_token = create_access_token(sub=str(user.id), email=str(user.email))
-    refresh_token = create_refresh_token(sub=str(user.id))
+    # access_token = create_access_token(sub=str(user.id), email=str(user.email))
+    # refresh_token = create_refresh_token(sub=str(user.id))
+    access_token = create_token(token_type="access", sub=str(user.id))
+    refresh_token = create_token(token_type="refresh", sub=str(user.id))
 
     response = success_response(message="Login successful")
     set_auth_cookies(response, access_token, refresh_token)
@@ -65,7 +64,7 @@ async def login(
 
 @router.get("/me", response_model=UserResponseSchema)
 async def get_current_user(
-    current_user: Annotated[ReadUserSchema, Depends(user_dependency)],
+    current_user: Annotated[ReadUserSchema, Depends(current_user_getter)],
 ):
     if not current_user.id:
         raise HTTPException(

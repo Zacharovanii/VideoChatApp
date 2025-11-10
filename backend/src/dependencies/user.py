@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, Request, status
 
 from db import db_helper
 from services.user import UserService
-from core.jwt import get_access_token
+from core.jwt import get_token
 from schemas.user import ReadUserSchema
 
 
@@ -17,8 +17,8 @@ async def current_user_getter(
     request: Request,
     service: UserService = Depends(user_service_getter),
 ):
-    payload = get_access_token(request)
-    user_id = int(payload.get("sub"))
+    payload = get_token(request=request, token_type="access")
+    user_id = int(payload.sub)
     user = await service.get_user_by_id(user_id)
     if not user:
         raise HTTPException(
