@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import User as UserORM
 from schemas import CreateUserSchema
+from core.pwd import validate_password
 
 search_by = Literal["email", "id", "username"]
 
@@ -51,3 +52,20 @@ class UserService:
         stmt = select(UserORM).filter(column_map[condition] == value)
         result = await self.db.execute(stmt)
         return result.scalars().one_or_none()
+
+    async def verify_user(
+        self,
+        email: str,
+        password: str,
+    ) -> UserORM | None:
+        stmt = select(UserORM).filter(UserORM.email == email)
+        result = await self.db.execute(stmt)
+        user = result.scalars().one_or_none()
+
+        if not user:
+            raise ValueError("No user with such email")
+
+        if not validate_password(password, user.hashed_password):
+            raise ValueError("Wrong password")
+
+        return user

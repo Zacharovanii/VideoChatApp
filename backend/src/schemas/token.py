@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 
+from .response import ResponseSchema
 
 class JwtPayloadSchema(BaseModel):
     sub: str
@@ -7,3 +8,11 @@ class JwtPayloadSchema(BaseModel):
     type: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TokenResponseBody(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+AccessTokenResponseSchema = ResponseSchema[TokenResponseBody]
